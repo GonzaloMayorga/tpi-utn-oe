@@ -1,0 +1,290 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" id="Definitions_NexoSoft" targetNamespace="https://nexosoft.example.edu/bpmn">
+  <bpmn:collaboration id="Collaboration_Tickets">
+    <bpmn:participant id="Participant_Cliente" name="Cliente (externo)"/>
+    <bpmn:participant id="Participant_NexoSoft" name="NexoSoft Soluciones SRL" processRef="Process_Tickets"/>
+    <bpmn:messageFlow id="MessageFlow_Cliente" name="Solicitud de soporte" sourceRef="Participant_Cliente" targetRef="Task_start"/>
+  </bpmn:collaboration>
+  <bpmn:process id="Process_Tickets" name="Gestión de tickets y SLA" isExecutable="false">
+    <bpmn:laneSet id="LaneSet_1">
+      <bpmn:lane id="Lane_Soporte" name="Soporte">
+        <bpmn:flowNodeRef>Task_validate</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_complete</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_request</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_receive</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_classify</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_assign</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_needs</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_resolve_support</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_merge</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_notify</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_accepted</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_reopen</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_Sistema" name="Sistema de Tickets y SLA">
+        <bpmn:flowNodeRef>Task_start</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_register</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_sla</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_close</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_end</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_Tecnico" name="Desarrollo y QA">
+        <bpmn:flowNodeRef>Task_resolve_tech</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_qa</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Timer_SLA</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_Proyectos" name="Gestión de Proyectos">
+        <bpmn:flowNodeRef>Task_escalate</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_escalate_end</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+    <bpmn:startEvent id="Task_start" name="Solicitud recibida">
+      <bpmn:messageEventDefinition id="MsgEvent_Start"/>
+    </bpmn:startEvent>
+    <bpmn:serviceTask id="Task_register" name="Registrar ticket"/>
+    <bpmn:userTask id="Task_validate" name="Validar datos"/>
+    <bpmn:exclusiveGateway id="Task_complete" name="¿Datos completos?"/>
+    <bpmn:sendTask id="Task_request" name="Solicitar información"/>
+    <bpmn:receiveTask id="Task_receive" name="Recibir información"/>
+    <bpmn:userTask id="Task_classify" name="Clasificar y priorizar"/>
+    <bpmn:serviceTask id="Task_sla" name="Consultar SLA"/>
+    <bpmn:userTask id="Task_assign" name="Asignar responsable"/>
+    <bpmn:exclusiveGateway id="Task_needs" name="¿Derivación técnica?"/>
+    <bpmn:userTask id="Task_resolve_support" name="Resolver en Soporte"/>
+    <bpmn:userTask id="Task_resolve_tech" name="Analizar y corregir"/>
+    <bpmn:userTask id="Task_qa" name="Verificar solución"/>
+    <bpmn:exclusiveGateway id="Task_merge" name="Convergencia"/>
+    <bpmn:sendTask id="Task_notify" name="Comunicar solución"/>
+    <bpmn:exclusiveGateway id="Task_accepted" name="¿Solución aceptada?"/>
+    <bpmn:userTask id="Task_reopen" name="Reabrir ticket"/>
+    <bpmn:serviceTask id="Task_close" name="Cerrar y actualizar métricas"/>
+    <bpmn:endEvent id="Task_end" name="Ticket cerrado"/>
+    <bpmn:userTask id="Task_escalate" name="Revisar vencimiento SLA"/>
+    <bpmn:endEvent id="Task_escalate_end" name="Escalamiento registrado"/>
+    <bpmn:boundaryEvent id="Timer_SLA" name="Umbral SLA alcanzado" attachedToRef="Task_resolve_tech" cancelActivity="false">
+      <bpmn:timerEventDefinition id="Timer_Def_SLA"><bpmn:timeDuration xsi:type="b:tFormalExpression">PT1H</bpmn:timeDuration></bpmn:timerEventDefinition>
+    </bpmn:boundaryEvent>
+    <bpmn:sequenceFlow id="Flow_1" sourceRef="Task_start" targetRef="Task_register"/>
+    <bpmn:sequenceFlow id="Flow_2" sourceRef="Task_register" targetRef="Task_validate"/>
+    <bpmn:sequenceFlow id="Flow_3" sourceRef="Task_validate" targetRef="Task_complete"/>
+    <bpmn:sequenceFlow id="Flow_4" sourceRef="Task_complete" targetRef="Task_classify" name="Sí"/>
+    <bpmn:sequenceFlow id="Flow_5" sourceRef="Task_complete" targetRef="Task_request" name="No"/>
+    <bpmn:sequenceFlow id="Flow_6" sourceRef="Task_request" targetRef="Task_receive"/>
+    <bpmn:sequenceFlow id="Flow_7" sourceRef="Task_receive" targetRef="Task_validate"/>
+    <bpmn:sequenceFlow id="Flow_8" sourceRef="Task_classify" targetRef="Task_sla"/>
+    <bpmn:sequenceFlow id="Flow_9" sourceRef="Task_sla" targetRef="Task_assign"/>
+    <bpmn:sequenceFlow id="Flow_10" sourceRef="Task_assign" targetRef="Task_needs"/>
+    <bpmn:sequenceFlow id="Flow_11" sourceRef="Task_needs" targetRef="Task_resolve_support" name="No"/>
+    <bpmn:sequenceFlow id="Flow_12" sourceRef="Task_needs" targetRef="Task_resolve_tech" name="Sí"/>
+    <bpmn:sequenceFlow id="Flow_13" sourceRef="Task_resolve_support" targetRef="Task_merge"/>
+    <bpmn:sequenceFlow id="Flow_14" sourceRef="Task_resolve_tech" targetRef="Task_qa"/>
+    <bpmn:sequenceFlow id="Flow_15" sourceRef="Task_qa" targetRef="Task_merge"/>
+    <bpmn:sequenceFlow id="Flow_16" sourceRef="Task_merge" targetRef="Task_notify"/>
+    <bpmn:sequenceFlow id="Flow_17" sourceRef="Task_notify" targetRef="Task_accepted"/>
+    <bpmn:sequenceFlow id="Flow_18" sourceRef="Task_accepted" targetRef="Task_close" name="Sí"/>
+    <bpmn:sequenceFlow id="Flow_19" sourceRef="Task_accepted" targetRef="Task_reopen" name="No"/>
+    <bpmn:sequenceFlow id="Flow_20" sourceRef="Task_reopen" targetRef="Task_resolve_support"/>
+    <bpmn:sequenceFlow id="Flow_21" sourceRef="Task_close" targetRef="Task_end"/>
+    <bpmn:sequenceFlow id="Flow_SLA" sourceRef="Timer_SLA" targetRef="Task_escalate"/>
+    <bpmn:sequenceFlow id="Flow_SLA_End" sourceRef="Task_escalate" targetRef="Task_escalate_end"/>
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="Diagram_1">
+    <bpmndi:BPMNPlane id="Plane_1" bpmnElement="Collaboration_Tickets">
+      <bpmndi:BPMNShape id="DI_Participant_Cliente" bpmnElement="Participant_Cliente">
+        <dc:Bounds x="55" y="35" width="2560" height="85"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="DI_Participant_NexoSoft" bpmnElement="Participant_NexoSoft" isExpanded="true">
+        <dc:Bounds x="55" y="165" width="2560" height="600"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="DI_Lane_Soporte" bpmnElement="Lane_Soporte">
+        <dc:Bounds x="85" y="165" width="2530" height="145"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="DI_Lane_Sistema" bpmnElement="Lane_Sistema">
+        <dc:Bounds x="85" y="310" width="2530" height="145"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="DI_Lane_Tecnico" bpmnElement="Lane_Tecnico">
+        <dc:Bounds x="85" y="455" width="2530" height="145"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="DI_Lane_Proyectos" bpmnElement="Lane_Proyectos">
+        <dc:Bounds x="85" y="600" width="2530" height="165"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="DI_Task_start" bpmnElement="Task_start">
+        <dc:Bounds x="240" y="355" width="36" height="36"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="DI_Task_register" bpmnElement="Task_register">
+        <dc:Bounds x="320" y="343" width="130" height="60"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="DI_Task_validate" bpmnElement="Task_validate">
+        <dc:Bounds x="495" y="205" width="130" height="65"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="DI_Task_complete" bpmnElement="Task_complete">
+        <dc:Bounds x="680" y="213" width="50" height="50"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="DI_Task_request" bpmnElement="Task_request">
+        <dc:Bounds x="675" y="100" width="145" height="60"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="DI_Task_receive" bpmnElement="Task_receive">
+        <dc:Bounds x="885" y="100" width="145" height="60"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="DI_Task_classify" bpmnElement="Task_classify">
+        <dc:Bounds x="795" y="205" width="145" height="65"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="DI_Task_sla" bpmnElement="Task_sla">
+        <dc:Bounds x="985" y="343" width="125" height="60"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="DI_Task_assign" bpmnElement="Task_assign">
+        <dc:Bounds x="1150" y="205" width="150" height="65"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="DI_Task_needs" bpmnElement="Task_needs">
+        <dc:Bounds x="1345" y="213" width="50" height="50"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="DI_Task_resolve_support" bpmnElement="Task_resolve_support">
+        <dc:Bounds x="1450" y="205" width="145" height="65"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="DI_Task_resolve_tech" bpmnElement="Task_resolve_tech">
+        <dc:Bounds x="1450" y="493" width="145" height="65"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="DI_Task_qa" bpmnElement="Task_qa">
+        <dc:Bounds x="1640" y="493" width="140" height="65"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="DI_Task_merge" bpmnElement="Task_merge">
+        <dc:Bounds x="1840" y="213" width="50" height="50"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="DI_Task_notify" bpmnElement="Task_notify">
+        <dc:Bounds x="1940" y="205" width="150" height="65"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="DI_Task_accepted" bpmnElement="Task_accepted">
+        <dc:Bounds x="2140" y="213" width="50" height="50"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="DI_Task_reopen" bpmnElement="Task_reopen">
+        <dc:Bounds x="2145" y="100" width="130" height="60"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="DI_Task_close" bpmnElement="Task_close">
+        <dc:Bounds x="2260" y="343" width="155" height="65"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="DI_Task_end" bpmnElement="Task_end">
+        <dc:Bounds x="2470" y="357" width="36" height="36"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="DI_Task_escalate" bpmnElement="Task_escalate">
+        <dc:Bounds x="1650" y="635" width="155" height="65"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="DI_Task_escalate_end" bpmnElement="Task_escalate_end">
+        <dc:Bounds x="1850" y="649" width="36" height="36"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="DI_Timer_SLA" bpmnElement="Timer_SLA">
+        <dc:Bounds x="1543" y="542" width="36" height="36"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="DI_Flow_1" bpmnElement="Flow_1">
+        <di:waypoint x="276" y="373"/>
+        <di:waypoint x="320" y="373"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="DI_Flow_2" bpmnElement="Flow_2">
+        <di:waypoint x="450" y="373"/>
+        <di:waypoint x="475" y="373"/>
+        <di:waypoint x="475" y="237"/>
+        <di:waypoint x="495" y="237"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="DI_Flow_3" bpmnElement="Flow_3">
+        <di:waypoint x="625" y="237.5"/>
+        <di:waypoint x="680" y="238.0"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="DI_Flow_4" bpmnElement="Flow_4">
+        <di:waypoint x="730" y="238.0"/>
+        <di:waypoint x="795" y="237.5"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="DI_Flow_5" bpmnElement="Flow_5">
+        <di:waypoint x="705" y="213"/>
+        <di:waypoint x="705" y="160"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="DI_Flow_6" bpmnElement="Flow_6">
+        <di:waypoint x="820" y="130"/>
+        <di:waypoint x="885" y="130"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="DI_Flow_7" bpmnElement="Flow_7">
+        <di:waypoint x="957" y="160"/>
+        <di:waypoint x="957" y="180"/>
+        <di:waypoint x="560" y="180"/>
+        <di:waypoint x="560" y="205"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="DI_Flow_8" bpmnElement="Flow_8">
+        <di:waypoint x="940" y="237"/>
+        <di:waypoint x="963" y="237"/>
+        <di:waypoint x="963" y="373"/>
+        <di:waypoint x="985" y="373"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="DI_Flow_9" bpmnElement="Flow_9">
+        <di:waypoint x="1110" y="373"/>
+        <di:waypoint x="1130" y="373"/>
+        <di:waypoint x="1130" y="237"/>
+        <di:waypoint x="1150" y="237"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="DI_Flow_10" bpmnElement="Flow_10">
+        <di:waypoint x="1300" y="237.5"/>
+        <di:waypoint x="1345" y="238.0"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="DI_Flow_11" bpmnElement="Flow_11">
+        <di:waypoint x="1395" y="238.0"/>
+        <di:waypoint x="1450" y="237.5"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="DI_Flow_12" bpmnElement="Flow_12">
+        <di:waypoint x="1370" y="263"/>
+        <di:waypoint x="1370" y="525"/>
+        <di:waypoint x="1450" y="525"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="DI_Flow_13" bpmnElement="Flow_13">
+        <di:waypoint x="1595" y="237"/>
+        <di:waypoint x="1840" y="237"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="DI_Flow_14" bpmnElement="Flow_14">
+        <di:waypoint x="1595" y="525"/>
+        <di:waypoint x="1640" y="525"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="DI_Flow_15" bpmnElement="Flow_15">
+        <di:waypoint x="1780" y="525"/>
+        <di:waypoint x="1865" y="525"/>
+        <di:waypoint x="1865" y="263"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="DI_Flow_16" bpmnElement="Flow_16">
+        <di:waypoint x="1890" y="238.0"/>
+        <di:waypoint x="1940" y="237.5"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="DI_Flow_17" bpmnElement="Flow_17">
+        <di:waypoint x="2090" y="237.5"/>
+        <di:waypoint x="2140" y="238.0"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="DI_Flow_18" bpmnElement="Flow_18">
+        <di:waypoint x="2190" y="237"/>
+        <di:waypoint x="2235" y="237"/>
+        <di:waypoint x="2235" y="375"/>
+        <di:waypoint x="2260" y="375"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="DI_Flow_19" bpmnElement="Flow_19">
+        <di:waypoint x="2165" y="213"/>
+        <di:waypoint x="2165" y="160"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="DI_Flow_20" bpmnElement="Flow_20">
+        <di:waypoint x="2145" y="130"/>
+        <di:waypoint x="1610" y="130"/>
+        <di:waypoint x="1610" y="237"/>
+        <di:waypoint x="1595" y="237"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="DI_Flow_21" bpmnElement="Flow_21">
+        <di:waypoint x="2415" y="375"/>
+        <di:waypoint x="2470" y="375"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="DI_Flow_SLA" bpmnElement="Flow_SLA">
+        <di:waypoint x="1561" y="578"/>
+        <di:waypoint x="1561" y="665"/>
+        <di:waypoint x="1650" y="665"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="DI_Flow_SLA_End" bpmnElement="Flow_SLA_End">
+        <di:waypoint x="1805" y="667"/>
+        <di:waypoint x="1850" y="667"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="DI_MessageFlow_Cliente" bpmnElement="MessageFlow_Cliente">
+        <di:waypoint x="258" y="120"/>
+        <di:waypoint x="258" y="355"/>
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>
