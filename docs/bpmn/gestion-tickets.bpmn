@@ -1,289 +1,631 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" id="Definitions_NexoSoft" targetNamespace="https://nexosoft.example.edu/bpmn">
+  <bpmn:message id="Message_Solicitud" name="Solicitud de soporte"/>
+  <bpmn:message id="Message_Acuse" name="Acuse de recibo"/>
+  <bpmn:message id="Message_PedidoDatos" name="Solicitud de información"/>
+  <bpmn:message id="Message_Datos" name="Información adicional"/>
+  <bpmn:message id="Message_Solucion" name="Propuesta de solución"/>
+  <bpmn:message id="Message_Decision" name="Aceptación o rechazo"/>
+  <bpmn:message id="Message_Cierre" name="Confirmación de cierre"/>
   <bpmn:collaboration id="Collaboration_Tickets">
-    <bpmn:participant id="Participant_Cliente" name="Cliente (externo)"/>
+    <bpmn:participant id="Participant_Cliente" name="Cliente (participante externo)"/>
     <bpmn:participant id="Participant_NexoSoft" name="NexoSoft Soluciones SRL" processRef="Process_Tickets"/>
-    <bpmn:messageFlow id="MessageFlow_Cliente" name="Solicitud de soporte" sourceRef="Participant_Cliente" targetRef="Task_start"/>
+    <bpmn:messageFlow id="MessageFlow_Solicitud" name="Solicitud de soporte" sourceRef="Participant_Cliente" targetRef="Start_Request"/>
+    <bpmn:messageFlow id="MessageFlow_Acuse" name="Acuse de recibo" sourceRef="Task_Acknowledge" targetRef="Participant_Cliente"/>
+    <bpmn:messageFlow id="MessageFlow_PedidoDatos" name="Solicitud de información" sourceRef="Task_RequestData" targetRef="Participant_Cliente"/>
+    <bpmn:messageFlow id="MessageFlow_Datos" name="Información adicional" sourceRef="Participant_Cliente" targetRef="Task_ReceiveData"/>
+    <bpmn:messageFlow id="MessageFlow_Solucion" name="Propuesta de solución" sourceRef="Task_Notify" targetRef="Participant_Cliente"/>
+    <bpmn:messageFlow id="MessageFlow_Decision" name="Aceptación o rechazo" sourceRef="Participant_Cliente" targetRef="Task_Decision"/>
+    <bpmn:messageFlow id="MessageFlow_Cierre" name="Confirmación de cierre" sourceRef="Task_Closure" targetRef="Participant_Cliente"/>
   </bpmn:collaboration>
   <bpmn:process id="Process_Tickets" name="Gestión de tickets y SLA" isExecutable="false">
-    <bpmn:laneSet id="LaneSet_1">
-      <bpmn:lane id="Lane_Soporte" name="Soporte">
-        <bpmn:flowNodeRef>Task_validate</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>Task_complete</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>Task_request</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>Task_receive</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>Task_classify</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>Task_assign</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>Task_needs</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>Task_resolve_support</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>Task_merge</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>Task_notify</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>Task_accepted</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>Task_reopen</bpmn:flowNodeRef>
-      </bpmn:lane>
-      <bpmn:lane id="Lane_Sistema" name="Sistema de Tickets y SLA">
-        <bpmn:flowNodeRef>Task_start</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>Task_register</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>Task_sla</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>Task_close</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>Task_end</bpmn:flowNodeRef>
-      </bpmn:lane>
-      <bpmn:lane id="Lane_Tecnico" name="Desarrollo y QA">
-        <bpmn:flowNodeRef>Task_resolve_tech</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>Task_qa</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>Timer_SLA</bpmn:flowNodeRef>
-      </bpmn:lane>
-      <bpmn:lane id="Lane_Proyectos" name="Gestión de Proyectos">
-        <bpmn:flowNodeRef>Task_escalate</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>Task_escalate_end</bpmn:flowNodeRef>
-      </bpmn:lane>
-    </bpmn:laneSet>
-    <bpmn:startEvent id="Task_start" name="Solicitud recibida">
-      <bpmn:messageEventDefinition id="MsgEvent_Start"/>
+    <bpmn:documentation>Modelo académico TO-BE no ejecutable. Las fechas límite se calculan desde la creación del ticket con el acuerdo SLA aplicable, calendario y pausas configurados. No fija duraciones contractuales. Las expresiones son conceptuales, no código de un motor.</bpmn:documentation>
+    <bpmn:startEvent id="Start_Request" name="Solicitud recibida">
+      <bpmn:outgoing>Flow_Start</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="Definition_Request" messageRef="Message_Solicitud"/>
     </bpmn:startEvent>
-    <bpmn:serviceTask id="Task_register" name="Registrar ticket"/>
-    <bpmn:userTask id="Task_validate" name="Validar datos"/>
-    <bpmn:exclusiveGateway id="Task_complete" name="¿Datos completos?"/>
-    <bpmn:sendTask id="Task_request" name="Solicitar información"/>
-    <bpmn:receiveTask id="Task_receive" name="Recibir información"/>
-    <bpmn:userTask id="Task_classify" name="Clasificar y priorizar"/>
-    <bpmn:serviceTask id="Task_sla" name="Consultar SLA"/>
-    <bpmn:userTask id="Task_assign" name="Asignar responsable"/>
-    <bpmn:exclusiveGateway id="Task_needs" name="¿Derivación técnica?"/>
-    <bpmn:userTask id="Task_resolve_support" name="Resolver en Soporte"/>
-    <bpmn:userTask id="Task_resolve_tech" name="Analizar y corregir"/>
-    <bpmn:userTask id="Task_qa" name="Verificar solución"/>
-    <bpmn:exclusiveGateway id="Task_merge" name="Convergencia"/>
-    <bpmn:sendTask id="Task_notify" name="Comunicar solución"/>
-    <bpmn:exclusiveGateway id="Task_accepted" name="¿Solución aceptada?"/>
-    <bpmn:userTask id="Task_reopen" name="Reabrir ticket"/>
-    <bpmn:serviceTask id="Task_close" name="Cerrar y actualizar métricas"/>
-    <bpmn:endEvent id="Task_end" name="Ticket cerrado"/>
-    <bpmn:userTask id="Task_escalate" name="Revisar vencimiento SLA"/>
-    <bpmn:endEvent id="Task_escalate_end" name="Escalamiento registrado"/>
-    <bpmn:boundaryEvent id="Timer_SLA" name="Umbral SLA alcanzado" attachedToRef="Task_resolve_tech" cancelActivity="false">
-      <bpmn:timerEventDefinition id="Timer_Def_SLA"><bpmn:timeDuration xsi:type="b:tFormalExpression">PT1H</bpmn:timeDuration></bpmn:timerEventDefinition>
+    <bpmn:serviceTask id="Task_Register" name="Registrar ticket y fecha de creación">
+      <bpmn:incoming>Flow_Start</bpmn:incoming>
+      <bpmn:outgoing>Flow_Config</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="Task_Configure" name="Calcular fechas límite según AcuerdoSLA">
+      <bpmn:incoming>Flow_Config</bpmn:incoming>
+      <bpmn:outgoing>Flow_Attention</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:subProcess id="SubProcess_Attention" name="Atender ticket — SLA de resolución activo">
+      <bpmn:documentation>Incluye primera respuesta, validación, esperas del cliente, atención técnica y aceptación. La alerta de resolución no interrumpe la atención. Las pausas y calendarios pertenecen a la configuración SLA, no se presuponen en este modelo.</bpmn:documentation>
+      <bpmn:incoming>Flow_Attention</bpmn:incoming>
+      <bpmn:outgoing>Flow_Close</bpmn:outgoing>
+      <bpmn:laneSet id="LaneSet_Attention">
+        <bpmn:lane id="Lane_Support" name="Soporte">
+          <bpmn:flowNodeRef>Start_Attention</bpmn:flowNodeRef>
+          <bpmn:flowNodeRef>Task_Acknowledge</bpmn:flowNodeRef>
+          <bpmn:flowNodeRef>Task_Validate</bpmn:flowNodeRef>
+          <bpmn:flowNodeRef>Gateway_Data</bpmn:flowNodeRef>
+          <bpmn:flowNodeRef>Task_RequestData</bpmn:flowNodeRef>
+          <bpmn:flowNodeRef>Task_ReceiveData</bpmn:flowNodeRef>
+          <bpmn:flowNodeRef>Task_Classify</bpmn:flowNodeRef>
+          <bpmn:flowNodeRef>Task_Assign</bpmn:flowNodeRef>
+          <bpmn:flowNodeRef>Gateway_Technical</bpmn:flowNodeRef>
+          <bpmn:flowNodeRef>Task_Support</bpmn:flowNodeRef>
+          <bpmn:flowNodeRef>Gateway_Merge</bpmn:flowNodeRef>
+          <bpmn:flowNodeRef>Task_Notify</bpmn:flowNodeRef>
+          <bpmn:flowNodeRef>Task_Decision</bpmn:flowNodeRef>
+          <bpmn:flowNodeRef>Gateway_Accepted</bpmn:flowNodeRef>
+          <bpmn:flowNodeRef>Task_Reopen</bpmn:flowNodeRef>
+          <bpmn:flowNodeRef>End_Attention</bpmn:flowNodeRef>
+          <bpmn:flowNodeRef>Timer_FirstResponse</bpmn:flowNodeRef>
+        </bpmn:lane>
+        <bpmn:lane id="Lane_Technical" name="Desarrollo y QA">
+          <bpmn:flowNodeRef>Task_Develop</bpmn:flowNodeRef>
+          <bpmn:flowNodeRef>Task_QA</bpmn:flowNodeRef>
+          <bpmn:flowNodeRef>Gateway_QA</bpmn:flowNodeRef>
+        </bpmn:lane>
+        <bpmn:lane id="Lane_System" name="Sistema de Tickets y SLA">
+          <bpmn:flowNodeRef>Task_AlertFirst</bpmn:flowNodeRef>
+        </bpmn:lane>
+        <bpmn:lane id="Lane_Projects" name="Gestión de Proyectos">
+          <bpmn:flowNodeRef>Task_ReviewFirst</bpmn:flowNodeRef>
+          <bpmn:flowNodeRef>End_FirstAlert</bpmn:flowNodeRef>
+        </bpmn:lane>
+      </bpmn:laneSet>
+      <bpmn:startEvent id="Start_Attention" name="Iniciar atención">
+        <bpmn:outgoing>Flow_Ack</bpmn:outgoing>
+      </bpmn:startEvent>
+      <bpmn:sendTask id="Task_Acknowledge" name="Enviar acuse y registrar primera respuesta" messageRef="Message_Acuse">
+        <bpmn:incoming>Flow_Ack</bpmn:incoming>
+        <bpmn:outgoing>Flow_Validate</bpmn:outgoing>
+      </bpmn:sendTask>
+      <bpmn:userTask id="Task_Validate" name="Validar cliente, producto y datos">
+        <bpmn:incoming>Flow_Validate</bpmn:incoming>
+        <bpmn:incoming>Flow_Revalidate</bpmn:incoming>
+        <bpmn:outgoing>Flow_Data</bpmn:outgoing>
+      </bpmn:userTask>
+      <bpmn:exclusiveGateway id="Gateway_Data" name="¿Datos completos?" default="Flow_DataNo">
+        <bpmn:incoming>Flow_Data</bpmn:incoming>
+        <bpmn:outgoing>Flow_DataYes</bpmn:outgoing>
+        <bpmn:outgoing>Flow_DataNo</bpmn:outgoing>
+      </bpmn:exclusiveGateway>
+      <bpmn:sendTask id="Task_RequestData" name="Solicitar información" messageRef="Message_PedidoDatos">
+        <bpmn:incoming>Flow_DataNo</bpmn:incoming>
+        <bpmn:outgoing>Flow_ReceiveData</bpmn:outgoing>
+      </bpmn:sendTask>
+      <bpmn:receiveTask id="Task_ReceiveData" name="Recibir información adicional" messageRef="Message_Datos">
+        <bpmn:incoming>Flow_ReceiveData</bpmn:incoming>
+        <bpmn:outgoing>Flow_Revalidate</bpmn:outgoing>
+      </bpmn:receiveTask>
+      <bpmn:userTask id="Task_Classify" name="Clasificar y priorizar">
+        <bpmn:incoming>Flow_DataYes</bpmn:incoming>
+        <bpmn:outgoing>Flow_Assign</bpmn:outgoing>
+      </bpmn:userTask>
+      <bpmn:userTask id="Task_Assign" name="Asignar responsable">
+        <bpmn:incoming>Flow_Assign</bpmn:incoming>
+        <bpmn:outgoing>Flow_Technical</bpmn:outgoing>
+      </bpmn:userTask>
+      <bpmn:exclusiveGateway id="Gateway_Technical" name="¿Intervención técnica?" default="Flow_Support">
+        <bpmn:incoming>Flow_Technical</bpmn:incoming>
+        <bpmn:incoming>Flow_Reopen</bpmn:incoming>
+        <bpmn:outgoing>Flow_Support</bpmn:outgoing>
+        <bpmn:outgoing>Flow_Develop</bpmn:outgoing>
+      </bpmn:exclusiveGateway>
+      <bpmn:userTask id="Task_Support" name="Resolver en Soporte">
+        <bpmn:incoming>Flow_Support</bpmn:incoming>
+        <bpmn:outgoing>Flow_SupportMerge</bpmn:outgoing>
+      </bpmn:userTask>
+      <bpmn:userTask id="Task_Develop" name="Analizar y corregir">
+        <bpmn:incoming>Flow_Develop</bpmn:incoming>
+        <bpmn:incoming>Flow_QANo</bpmn:incoming>
+        <bpmn:outgoing>Flow_QA</bpmn:outgoing>
+      </bpmn:userTask>
+      <bpmn:userTask id="Task_QA" name="Verificar solución">
+        <bpmn:incoming>Flow_QA</bpmn:incoming>
+        <bpmn:outgoing>Flow_CheckQA</bpmn:outgoing>
+      </bpmn:userTask>
+      <bpmn:exclusiveGateway id="Gateway_QA" name="¿Verificación conforme?" default="Flow_QANo">
+        <bpmn:incoming>Flow_CheckQA</bpmn:incoming>
+        <bpmn:outgoing>Flow_QAYes</bpmn:outgoing>
+        <bpmn:outgoing>Flow_QANo</bpmn:outgoing>
+      </bpmn:exclusiveGateway>
+      <bpmn:exclusiveGateway id="Gateway_Merge" name="Unificar atención">
+        <bpmn:incoming>Flow_QAYes</bpmn:incoming>
+        <bpmn:incoming>Flow_SupportMerge</bpmn:incoming>
+        <bpmn:outgoing>Flow_Notify</bpmn:outgoing>
+      </bpmn:exclusiveGateway>
+      <bpmn:sendTask id="Task_Notify" name="Comunicar propuesta de solución" messageRef="Message_Solucion">
+        <bpmn:incoming>Flow_Notify</bpmn:incoming>
+        <bpmn:outgoing>Flow_Decision</bpmn:outgoing>
+      </bpmn:sendTask>
+      <bpmn:receiveTask id="Task_Decision" name="Recibir aceptación o rechazo" messageRef="Message_Decision">
+        <bpmn:incoming>Flow_Decision</bpmn:incoming>
+        <bpmn:outgoing>Flow_Accepted</bpmn:outgoing>
+      </bpmn:receiveTask>
+      <bpmn:exclusiveGateway id="Gateway_Accepted" name="¿Solución aceptada?" default="Flow_AcceptNo">
+        <bpmn:incoming>Flow_Accepted</bpmn:incoming>
+        <bpmn:outgoing>Flow_AcceptYes</bpmn:outgoing>
+        <bpmn:outgoing>Flow_AcceptNo</bpmn:outgoing>
+      </bpmn:exclusiveGateway>
+      <bpmn:userTask id="Task_Reopen" name="Registrar rechazo y retomar atención">
+        <bpmn:incoming>Flow_AcceptNo</bpmn:incoming>
+        <bpmn:outgoing>Flow_Reopen</bpmn:outgoing>
+      </bpmn:userTask>
+      <bpmn:endEvent id="End_Attention" name="Resolución aceptada">
+        <bpmn:incoming>Flow_AcceptYes</bpmn:incoming>
+      </bpmn:endEvent>
+      <bpmn:boundaryEvent id="Timer_FirstResponse" name="Límite de primera respuesta" attachedToRef="Task_Acknowledge" cancelActivity="false">
+        <bpmn:outgoing>Flow_FirstAlert</bpmn:outgoing>
+        <bpmn:timerEventDefinition id="Definition_FirstResponse">
+          <bpmn:timeDate xsi:type="bpmn:tFormalExpression" language="urn:nexosoft:conceptual">sla.fechaLimitePrimeraRespuesta</bpmn:timeDate>
+        </bpmn:timerEventDefinition>
+      </bpmn:boundaryEvent>
+      <bpmn:serviceTask id="Task_AlertFirst" name="Registrar y notificar incumplimiento de primera respuesta">
+        <bpmn:incoming>Flow_FirstAlert</bpmn:incoming>
+        <bpmn:outgoing>Flow_FirstReview</bpmn:outgoing>
+      </bpmn:serviceTask>
+      <bpmn:userTask id="Task_ReviewFirst" name="Gestión de Proyectos: evaluar alerta y coordinar acción">
+        <bpmn:incoming>Flow_FirstReview</bpmn:incoming>
+        <bpmn:outgoing>Flow_FirstDone</bpmn:outgoing>
+      </bpmn:userTask>
+      <bpmn:endEvent id="End_FirstAlert" name="Alerta atendida">
+        <bpmn:incoming>Flow_FirstDone</bpmn:incoming>
+      </bpmn:endEvent>
+      <bpmn:sequenceFlow id="Flow_Ack" sourceRef="Start_Attention" targetRef="Task_Acknowledge"/>
+      <bpmn:sequenceFlow id="Flow_Validate" sourceRef="Task_Acknowledge" targetRef="Task_Validate"/>
+      <bpmn:sequenceFlow id="Flow_Data" sourceRef="Task_Validate" targetRef="Gateway_Data"/>
+      <bpmn:sequenceFlow id="Flow_DataYes" sourceRef="Gateway_Data" targetRef="Task_Classify" name="Sí">
+        <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression" language="urn:nexosoft:conceptual">datos.completos</bpmn:conditionExpression>
+      </bpmn:sequenceFlow>
+      <bpmn:sequenceFlow id="Flow_DataNo" sourceRef="Gateway_Data" targetRef="Task_RequestData" name="No"/>
+      <bpmn:sequenceFlow id="Flow_ReceiveData" sourceRef="Task_RequestData" targetRef="Task_ReceiveData"/>
+      <bpmn:sequenceFlow id="Flow_Revalidate" sourceRef="Task_ReceiveData" targetRef="Task_Validate"/>
+      <bpmn:sequenceFlow id="Flow_Assign" sourceRef="Task_Classify" targetRef="Task_Assign"/>
+      <bpmn:sequenceFlow id="Flow_Technical" sourceRef="Task_Assign" targetRef="Gateway_Technical"/>
+      <bpmn:sequenceFlow id="Flow_Support" sourceRef="Gateway_Technical" targetRef="Task_Support" name="No"/>
+      <bpmn:sequenceFlow id="Flow_Develop" sourceRef="Gateway_Technical" targetRef="Task_Develop" name="Sí">
+        <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression" language="urn:nexosoft:conceptual">ticket.requiereIntervencionTecnica</bpmn:conditionExpression>
+      </bpmn:sequenceFlow>
+      <bpmn:sequenceFlow id="Flow_QA" sourceRef="Task_Develop" targetRef="Task_QA"/>
+      <bpmn:sequenceFlow id="Flow_CheckQA" sourceRef="Task_QA" targetRef="Gateway_QA"/>
+      <bpmn:sequenceFlow id="Flow_QAYes" sourceRef="Gateway_QA" targetRef="Gateway_Merge" name="Sí">
+        <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression" language="urn:nexosoft:conceptual">verificacion.conforme</bpmn:conditionExpression>
+      </bpmn:sequenceFlow>
+      <bpmn:sequenceFlow id="Flow_QANo" sourceRef="Gateway_QA" targetRef="Task_Develop" name="No"/>
+      <bpmn:sequenceFlow id="Flow_SupportMerge" sourceRef="Task_Support" targetRef="Gateway_Merge"/>
+      <bpmn:sequenceFlow id="Flow_Notify" sourceRef="Gateway_Merge" targetRef="Task_Notify"/>
+      <bpmn:sequenceFlow id="Flow_Decision" sourceRef="Task_Notify" targetRef="Task_Decision"/>
+      <bpmn:sequenceFlow id="Flow_Accepted" sourceRef="Task_Decision" targetRef="Gateway_Accepted"/>
+      <bpmn:sequenceFlow id="Flow_AcceptYes" sourceRef="Gateway_Accepted" targetRef="End_Attention" name="Sí">
+        <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression" language="urn:nexosoft:conceptual">respuestaCliente.aceptada</bpmn:conditionExpression>
+      </bpmn:sequenceFlow>
+      <bpmn:sequenceFlow id="Flow_AcceptNo" sourceRef="Gateway_Accepted" targetRef="Task_Reopen" name="No"/>
+      <bpmn:sequenceFlow id="Flow_Reopen" sourceRef="Task_Reopen" targetRef="Gateway_Technical"/>
+      <bpmn:sequenceFlow id="Flow_FirstAlert" sourceRef="Timer_FirstResponse" targetRef="Task_AlertFirst"/>
+      <bpmn:sequenceFlow id="Flow_FirstReview" sourceRef="Task_AlertFirst" targetRef="Task_ReviewFirst"/>
+      <bpmn:sequenceFlow id="Flow_FirstDone" sourceRef="Task_ReviewFirst" targetRef="End_FirstAlert"/>
+    </bpmn:subProcess>
+    <bpmn:serviceTask id="Task_Close" name="Cerrar ticket y actualizar historial e indicadores">
+      <bpmn:incoming>Flow_Close</bpmn:incoming>
+      <bpmn:outgoing>Flow_Closure</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sendTask id="Task_Closure" name="Notificar cierre al cliente" messageRef="Message_Cierre">
+      <bpmn:incoming>Flow_Closure</bpmn:incoming>
+      <bpmn:outgoing>Flow_End</bpmn:outgoing>
+    </bpmn:sendTask>
+    <bpmn:endEvent id="End_Ticket" name="Ticket cerrado">
+      <bpmn:incoming>Flow_End</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:boundaryEvent id="Timer_Resolution" name="Límite de resolución" attachedToRef="SubProcess_Attention" cancelActivity="false">
+      <bpmn:outgoing>Flow_ResolutionAlert</bpmn:outgoing>
+      <bpmn:timerEventDefinition id="Definition_Resolution">
+        <bpmn:timeDate xsi:type="bpmn:tFormalExpression" language="urn:nexosoft:conceptual">sla.fechaLimiteResolucion</bpmn:timeDate>
+      </bpmn:timerEventDefinition>
     </bpmn:boundaryEvent>
-    <bpmn:sequenceFlow id="Flow_1" sourceRef="Task_start" targetRef="Task_register"/>
-    <bpmn:sequenceFlow id="Flow_2" sourceRef="Task_register" targetRef="Task_validate"/>
-    <bpmn:sequenceFlow id="Flow_3" sourceRef="Task_validate" targetRef="Task_complete"/>
-    <bpmn:sequenceFlow id="Flow_4" sourceRef="Task_complete" targetRef="Task_classify" name="Sí"/>
-    <bpmn:sequenceFlow id="Flow_5" sourceRef="Task_complete" targetRef="Task_request" name="No"/>
-    <bpmn:sequenceFlow id="Flow_6" sourceRef="Task_request" targetRef="Task_receive"/>
-    <bpmn:sequenceFlow id="Flow_7" sourceRef="Task_receive" targetRef="Task_validate"/>
-    <bpmn:sequenceFlow id="Flow_8" sourceRef="Task_classify" targetRef="Task_sla"/>
-    <bpmn:sequenceFlow id="Flow_9" sourceRef="Task_sla" targetRef="Task_assign"/>
-    <bpmn:sequenceFlow id="Flow_10" sourceRef="Task_assign" targetRef="Task_needs"/>
-    <bpmn:sequenceFlow id="Flow_11" sourceRef="Task_needs" targetRef="Task_resolve_support" name="No"/>
-    <bpmn:sequenceFlow id="Flow_12" sourceRef="Task_needs" targetRef="Task_resolve_tech" name="Sí"/>
-    <bpmn:sequenceFlow id="Flow_13" sourceRef="Task_resolve_support" targetRef="Task_merge"/>
-    <bpmn:sequenceFlow id="Flow_14" sourceRef="Task_resolve_tech" targetRef="Task_qa"/>
-    <bpmn:sequenceFlow id="Flow_15" sourceRef="Task_qa" targetRef="Task_merge"/>
-    <bpmn:sequenceFlow id="Flow_16" sourceRef="Task_merge" targetRef="Task_notify"/>
-    <bpmn:sequenceFlow id="Flow_17" sourceRef="Task_notify" targetRef="Task_accepted"/>
-    <bpmn:sequenceFlow id="Flow_18" sourceRef="Task_accepted" targetRef="Task_close" name="Sí"/>
-    <bpmn:sequenceFlow id="Flow_19" sourceRef="Task_accepted" targetRef="Task_reopen" name="No"/>
-    <bpmn:sequenceFlow id="Flow_20" sourceRef="Task_reopen" targetRef="Task_resolve_support"/>
-    <bpmn:sequenceFlow id="Flow_21" sourceRef="Task_close" targetRef="Task_end"/>
-    <bpmn:sequenceFlow id="Flow_SLA" sourceRef="Timer_SLA" targetRef="Task_escalate"/>
-    <bpmn:sequenceFlow id="Flow_SLA_End" sourceRef="Task_escalate" targetRef="Task_escalate_end"/>
+    <bpmn:serviceTask id="Task_AlertResolution" name="Sistema: registrar y notificar incumplimiento de resolución">
+      <bpmn:incoming>Flow_ResolutionAlert</bpmn:incoming>
+      <bpmn:outgoing>Flow_ResolutionReview</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:userTask id="Task_ReviewResolution" name="Gestión de Proyectos: evaluar alerta y coordinar acción">
+      <bpmn:incoming>Flow_ResolutionReview</bpmn:incoming>
+      <bpmn:outgoing>Flow_ResolutionDone</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:endEvent id="End_ResolutionAlert" name="Alerta atendida">
+      <bpmn:incoming>Flow_ResolutionDone</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_Start" sourceRef="Start_Request" targetRef="Task_Register"/>
+    <bpmn:sequenceFlow id="Flow_Config" sourceRef="Task_Register" targetRef="Task_Configure"/>
+    <bpmn:sequenceFlow id="Flow_Attention" sourceRef="Task_Configure" targetRef="SubProcess_Attention"/>
+    <bpmn:sequenceFlow id="Flow_Close" sourceRef="SubProcess_Attention" targetRef="Task_Close"/>
+    <bpmn:sequenceFlow id="Flow_Closure" sourceRef="Task_Close" targetRef="Task_Closure"/>
+    <bpmn:sequenceFlow id="Flow_End" sourceRef="Task_Closure" targetRef="End_Ticket"/>
+    <bpmn:sequenceFlow id="Flow_ResolutionAlert" sourceRef="Timer_Resolution" targetRef="Task_AlertResolution"/>
+    <bpmn:sequenceFlow id="Flow_ResolutionReview" sourceRef="Task_AlertResolution" targetRef="Task_ReviewResolution"/>
+    <bpmn:sequenceFlow id="Flow_ResolutionDone" sourceRef="Task_ReviewResolution" targetRef="End_ResolutionAlert"/>
   </bpmn:process>
-  <bpmndi:BPMNDiagram id="Diagram_1">
-    <bpmndi:BPMNPlane id="Plane_1" bpmnElement="Collaboration_Tickets">
-      <bpmndi:BPMNShape id="DI_Participant_Cliente" bpmnElement="Participant_Cliente">
-        <dc:Bounds x="55" y="35" width="2560" height="85"/>
+  <bpmndi:BPMNDiagram id="Diagram_Tickets">
+    <bpmndi:BPMNPlane id="Plane_Tickets" bpmnElement="Collaboration_Tickets">
+      <bpmndi:BPMNShape id="DI_Participant_Cliente" bpmnElement="Participant_Cliente" isHorizontal="true">
+        <dc:Bounds x="170" y="40" width="4020" height="90"/>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="DI_Participant_NexoSoft" bpmnElement="Participant_NexoSoft" isExpanded="true">
-        <dc:Bounds x="55" y="165" width="2560" height="600"/>
+      <bpmndi:BPMNShape id="DI_Participant_NexoSoft" bpmnElement="Participant_NexoSoft" isHorizontal="true">
+        <dc:Bounds x="170" y="180" width="4020" height="1620"/>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="DI_Lane_Soporte" bpmnElement="Lane_Soporte">
-        <dc:Bounds x="85" y="165" width="2530" height="145"/>
+      <bpmndi:BPMNShape id="DI_SubProcess_Attention" bpmnElement="SubProcess_Attention" isExpanded="true">
+        <dc:Bounds x="200" y="400" width="3240" height="1100"/>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="DI_Lane_Sistema" bpmnElement="Lane_Sistema">
-        <dc:Bounds x="85" y="310" width="2530" height="145"/>
+      <bpmndi:BPMNShape id="DI_Lane_Support" bpmnElement="Lane_Support" isHorizontal="true">
+        <dc:Bounds x="230" y="440" width="3210" height="510"/>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="DI_Lane_Tecnico" bpmnElement="Lane_Tecnico">
-        <dc:Bounds x="85" y="455" width="2530" height="145"/>
+      <bpmndi:BPMNShape id="DI_Lane_Technical" bpmnElement="Lane_Technical" isHorizontal="true">
+        <dc:Bounds x="230" y="950" width="3210" height="170"/>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="DI_Lane_Proyectos" bpmnElement="Lane_Proyectos">
-        <dc:Bounds x="85" y="600" width="2530" height="165"/>
+      <bpmndi:BPMNShape id="DI_Lane_System" bpmnElement="Lane_System" isHorizontal="true">
+        <dc:Bounds x="230" y="1120" width="3210" height="180"/>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="DI_Task_start" bpmnElement="Task_start">
-        <dc:Bounds x="240" y="355" width="36" height="36"/>
+      <bpmndi:BPMNShape id="DI_Lane_Projects" bpmnElement="Lane_Projects" isHorizontal="true">
+        <dc:Bounds x="230" y="1300" width="3210" height="200"/>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="DI_Task_register" bpmnElement="Task_register">
-        <dc:Bounds x="320" y="343" width="130" height="60"/>
+      <bpmndi:BPMNShape id="DI_Start_Request" bpmnElement="Start_Request">
+        <dc:Bounds x="220" y="235" width="36" height="36"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="175" y="279" width="140" height="40"/>
+        </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="DI_Task_validate" bpmnElement="Task_validate">
-        <dc:Bounds x="495" y="205" width="130" height="65"/>
+      <bpmndi:BPMNShape id="DI_Task_Register" bpmnElement="Task_Register">
+        <dc:Bounds x="1000" y="218" width="150" height="70"/>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="DI_Task_complete" bpmnElement="Task_complete">
-        <dc:Bounds x="680" y="213" width="50" height="50"/>
+      <bpmndi:BPMNShape id="DI_Task_Configure" bpmnElement="Task_Configure">
+        <dc:Bounds x="1220" y="218" width="150" height="70"/>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="DI_Task_request" bpmnElement="Task_request">
-        <dc:Bounds x="675" y="100" width="145" height="60"/>
+      <bpmndi:BPMNShape id="DI_Start_Attention" bpmnElement="Start_Attention">
+        <dc:Bounds x="290" y="522" width="36" height="36"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="245" y="566" width="140" height="40"/>
+        </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="DI_Task_receive" bpmnElement="Task_receive">
-        <dc:Bounds x="885" y="100" width="145" height="60"/>
+      <bpmndi:BPMNShape id="DI_Task_Acknowledge" bpmnElement="Task_Acknowledge">
+        <dc:Bounds x="380" y="505" width="150" height="70"/>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="DI_Task_classify" bpmnElement="Task_classify">
-        <dc:Bounds x="795" y="205" width="145" height="65"/>
+      <bpmndi:BPMNShape id="DI_Task_Validate" bpmnElement="Task_Validate">
+        <dc:Bounds x="610" y="505" width="150" height="70"/>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="DI_Task_sla" bpmnElement="Task_sla">
-        <dc:Bounds x="985" y="343" width="125" height="60"/>
+      <bpmndi:BPMNShape id="DI_Gateway_Data" bpmnElement="Gateway_Data" isMarkerVisible="true">
+        <dc:Bounds x="820" y="515" width="50" height="50"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="775" y="573" width="140" height="40"/>
+        </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="DI_Task_assign" bpmnElement="Task_assign">
-        <dc:Bounds x="1150" y="205" width="150" height="65"/>
+      <bpmndi:BPMNShape id="DI_Task_RequestData" bpmnElement="Task_RequestData">
+        <dc:Bounds x="750" y="700" width="150" height="70"/>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="DI_Task_needs" bpmnElement="Task_needs">
-        <dc:Bounds x="1345" y="213" width="50" height="50"/>
+      <bpmndi:BPMNShape id="DI_Task_ReceiveData" bpmnElement="Task_ReceiveData">
+        <dc:Bounds x="520" y="700" width="150" height="70"/>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="DI_Task_resolve_support" bpmnElement="Task_resolve_support">
-        <dc:Bounds x="1450" y="205" width="145" height="65"/>
+      <bpmndi:BPMNShape id="DI_Task_Classify" bpmnElement="Task_Classify">
+        <dc:Bounds x="970" y="505" width="150" height="70"/>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="DI_Task_resolve_tech" bpmnElement="Task_resolve_tech">
-        <dc:Bounds x="1450" y="493" width="145" height="65"/>
+      <bpmndi:BPMNShape id="DI_Task_Assign" bpmnElement="Task_Assign">
+        <dc:Bounds x="1180" y="505" width="150" height="70"/>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="DI_Task_qa" bpmnElement="Task_qa">
-        <dc:Bounds x="1640" y="493" width="140" height="65"/>
+      <bpmndi:BPMNShape id="DI_Gateway_Technical" bpmnElement="Gateway_Technical" isMarkerVisible="true">
+        <dc:Bounds x="1400" y="515" width="50" height="50"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1355" y="573" width="140" height="40"/>
+        </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="DI_Task_merge" bpmnElement="Task_merge">
-        <dc:Bounds x="1840" y="213" width="50" height="50"/>
+      <bpmndi:BPMNShape id="DI_Task_Support" bpmnElement="Task_Support">
+        <dc:Bounds x="1550" y="505" width="150" height="70"/>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="DI_Task_notify" bpmnElement="Task_notify">
-        <dc:Bounds x="1940" y="205" width="150" height="65"/>
+      <bpmndi:BPMNShape id="DI_Task_Develop" bpmnElement="Task_Develop">
+        <dc:Bounds x="1430" y="1000" width="150" height="70"/>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="DI_Task_accepted" bpmnElement="Task_accepted">
-        <dc:Bounds x="2140" y="213" width="50" height="50"/>
+      <bpmndi:BPMNShape id="DI_Task_QA" bpmnElement="Task_QA">
+        <dc:Bounds x="1670" y="1000" width="150" height="70"/>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="DI_Task_reopen" bpmnElement="Task_reopen">
-        <dc:Bounds x="2145" y="100" width="130" height="60"/>
+      <bpmndi:BPMNShape id="DI_Gateway_QA" bpmnElement="Gateway_QA" isMarkerVisible="true">
+        <dc:Bounds x="1880" y="1010" width="50" height="50"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1940" y="1065" width="140" height="40"/>
+        </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="DI_Task_close" bpmnElement="Task_close">
-        <dc:Bounds x="2260" y="343" width="155" height="65"/>
+      <bpmndi:BPMNShape id="DI_Gateway_Merge" bpmnElement="Gateway_Merge" isMarkerVisible="true">
+        <dc:Bounds x="2040" y="515" width="50" height="50"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1995" y="573" width="140" height="40"/>
+        </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="DI_Task_end" bpmnElement="Task_end">
-        <dc:Bounds x="2470" y="357" width="36" height="36"/>
+      <bpmndi:BPMNShape id="DI_Task_Notify" bpmnElement="Task_Notify">
+        <dc:Bounds x="2200" y="505" width="150" height="70"/>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="DI_Task_escalate" bpmnElement="Task_escalate">
-        <dc:Bounds x="1650" y="635" width="155" height="65"/>
+      <bpmndi:BPMNShape id="DI_Task_Decision" bpmnElement="Task_Decision">
+        <dc:Bounds x="2460" y="505" width="150" height="70"/>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="DI_Task_escalate_end" bpmnElement="Task_escalate_end">
-        <dc:Bounds x="1850" y="649" width="36" height="36"/>
+      <bpmndi:BPMNShape id="DI_Gateway_Accepted" bpmnElement="Gateway_Accepted" isMarkerVisible="true">
+        <dc:Bounds x="2730" y="515" width="50" height="50"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="2685" y="573" width="140" height="40"/>
+        </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="DI_Timer_SLA" bpmnElement="Timer_SLA">
-        <dc:Bounds x="1543" y="542" width="36" height="36"/>
+      <bpmndi:BPMNShape id="DI_Task_Reopen" bpmnElement="Task_Reopen">
+        <dc:Bounds x="2470" y="800" width="150" height="70"/>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNEdge id="DI_Flow_1" bpmnElement="Flow_1">
-        <di:waypoint x="276" y="373"/>
-        <di:waypoint x="320" y="373"/>
+      <bpmndi:BPMNShape id="DI_End_Attention" bpmnElement="End_Attention">
+        <dc:Bounds x="3070" y="522" width="36" height="36"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="3025" y="566" width="140" height="40"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="DI_Timer_FirstResponse" bpmnElement="Timer_FirstResponse">
+        <dc:Bounds x="480" y="557" width="36" height="36"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="300" y="610" width="140" height="40"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="DI_Task_AlertFirst" bpmnElement="Task_AlertFirst">
+        <dc:Bounds x="1060" y="1170" width="190" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="DI_Task_ReviewFirst" bpmnElement="Task_ReviewFirst">
+        <dc:Bounds x="1060" y="1360" width="190" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="DI_End_FirstAlert" bpmnElement="End_FirstAlert">
+        <dc:Bounds x="1390" y="1382" width="36" height="36"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1345" y="1426" width="140" height="40"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="DI_Task_Close" bpmnElement="Task_Close">
+        <dc:Bounds x="3550" y="218" width="190" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="DI_Task_Closure" bpmnElement="Task_Closure">
+        <dc:Bounds x="3830" y="218" width="150" height="70"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="DI_End_Ticket" bpmnElement="End_Ticket">
+        <dc:Bounds x="4090" y="235" width="36" height="36"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="4045" y="279" width="140" height="40"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="DI_Timer_Resolution" bpmnElement="Timer_Resolution">
+        <dc:Bounds x="3260" y="1482" width="36" height="36"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="3215" y="1526" width="140" height="40"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="DI_Task_AlertResolution" bpmnElement="Task_AlertResolution">
+        <dc:Bounds x="3220" y="1640" width="190" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="DI_Task_ReviewResolution" bpmnElement="Task_ReviewResolution">
+        <dc:Bounds x="3520" y="1640" width="190" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="DI_End_ResolutionAlert" bpmnElement="End_ResolutionAlert">
+        <dc:Bounds x="3860" y="1662" width="36" height="36"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="3815" y="1706" width="140" height="40"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="DI_Flow_Start" bpmnElement="Flow_Start">
+        <di:waypoint x="256" y="253"/>
+        <di:waypoint x="1000" y="253"/>
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="DI_Flow_2" bpmnElement="Flow_2">
-        <di:waypoint x="450" y="373"/>
-        <di:waypoint x="475" y="373"/>
-        <di:waypoint x="475" y="237"/>
-        <di:waypoint x="495" y="237"/>
+      <bpmndi:BPMNEdge id="DI_Flow_Config" bpmnElement="Flow_Config">
+        <di:waypoint x="1150" y="253"/>
+        <di:waypoint x="1220" y="253"/>
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="DI_Flow_3" bpmnElement="Flow_3">
-        <di:waypoint x="625" y="237.5"/>
-        <di:waypoint x="680" y="238.0"/>
+      <bpmndi:BPMNEdge id="DI_Flow_Attention" bpmnElement="Flow_Attention">
+        <di:waypoint x="1295" y="288"/>
+        <di:waypoint x="1295" y="400"/>
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="DI_Flow_4" bpmnElement="Flow_4">
-        <di:waypoint x="730" y="238.0"/>
-        <di:waypoint x="795" y="237.5"/>
+      <bpmndi:BPMNEdge id="DI_Flow_Close" bpmnElement="Flow_Close">
+        <di:waypoint x="3440" y="600"/>
+        <di:waypoint x="3500" y="600"/>
+        <di:waypoint x="3500" y="258"/>
+        <di:waypoint x="3550" y="258"/>
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="DI_Flow_5" bpmnElement="Flow_5">
-        <di:waypoint x="705" y="213"/>
-        <di:waypoint x="705" y="160"/>
+      <bpmndi:BPMNEdge id="DI_Flow_Closure" bpmnElement="Flow_Closure">
+        <di:waypoint x="3740" y="258"/>
+        <di:waypoint x="3830" y="258"/>
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="DI_Flow_6" bpmnElement="Flow_6">
-        <di:waypoint x="820" y="130"/>
-        <di:waypoint x="885" y="130"/>
+      <bpmndi:BPMNEdge id="DI_Flow_End" bpmnElement="Flow_End">
+        <di:waypoint x="3980" y="253"/>
+        <di:waypoint x="4090" y="253"/>
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="DI_Flow_7" bpmnElement="Flow_7">
-        <di:waypoint x="957" y="160"/>
-        <di:waypoint x="957" y="180"/>
-        <di:waypoint x="560" y="180"/>
-        <di:waypoint x="560" y="205"/>
+      <bpmndi:BPMNEdge id="DI_Flow_ResolutionAlert" bpmnElement="Flow_ResolutionAlert">
+        <di:waypoint x="3278" y="1518"/>
+        <di:waypoint x="3278" y="1640"/>
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="DI_Flow_8" bpmnElement="Flow_8">
-        <di:waypoint x="940" y="237"/>
-        <di:waypoint x="963" y="237"/>
-        <di:waypoint x="963" y="373"/>
-        <di:waypoint x="985" y="373"/>
+      <bpmndi:BPMNEdge id="DI_Flow_ResolutionReview" bpmnElement="Flow_ResolutionReview">
+        <di:waypoint x="3410" y="1680"/>
+        <di:waypoint x="3520" y="1680"/>
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="DI_Flow_9" bpmnElement="Flow_9">
-        <di:waypoint x="1110" y="373"/>
-        <di:waypoint x="1130" y="373"/>
-        <di:waypoint x="1130" y="237"/>
-        <di:waypoint x="1150" y="237"/>
+      <bpmndi:BPMNEdge id="DI_Flow_ResolutionDone" bpmnElement="Flow_ResolutionDone">
+        <di:waypoint x="3710" y="1680"/>
+        <di:waypoint x="3860" y="1680"/>
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="DI_Flow_10" bpmnElement="Flow_10">
-        <di:waypoint x="1300" y="237.5"/>
-        <di:waypoint x="1345" y="238.0"/>
+      <bpmndi:BPMNEdge id="DI_Flow_Ack" bpmnElement="Flow_Ack">
+        <di:waypoint x="326" y="540"/>
+        <di:waypoint x="380" y="540"/>
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="DI_Flow_11" bpmnElement="Flow_11">
-        <di:waypoint x="1395" y="238.0"/>
-        <di:waypoint x="1450" y="237.5"/>
+      <bpmndi:BPMNEdge id="DI_Flow_Validate" bpmnElement="Flow_Validate">
+        <di:waypoint x="530" y="540"/>
+        <di:waypoint x="610" y="540"/>
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="DI_Flow_12" bpmnElement="Flow_12">
-        <di:waypoint x="1370" y="263"/>
-        <di:waypoint x="1370" y="525"/>
-        <di:waypoint x="1450" y="525"/>
+      <bpmndi:BPMNEdge id="DI_Flow_Data" bpmnElement="Flow_Data">
+        <di:waypoint x="760" y="540"/>
+        <di:waypoint x="820" y="540"/>
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="DI_Flow_13" bpmnElement="Flow_13">
-        <di:waypoint x="1595" y="237"/>
-        <di:waypoint x="1840" y="237"/>
+      <bpmndi:BPMNEdge id="DI_Flow_DataYes" bpmnElement="Flow_DataYes">
+        <di:waypoint x="870" y="540"/>
+        <di:waypoint x="970" y="540"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="928.0" y="516.0" width="40" height="20"/>
+        </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="DI_Flow_14" bpmnElement="Flow_14">
-        <di:waypoint x="1595" y="525"/>
-        <di:waypoint x="1640" y="525"/>
+      <bpmndi:BPMNEdge id="DI_Flow_DataNo" bpmnElement="Flow_DataNo">
+        <di:waypoint x="845" y="565"/>
+        <di:waypoint x="845" y="700"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="853.0" y="608.5" width="40" height="20"/>
+        </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="DI_Flow_15" bpmnElement="Flow_15">
-        <di:waypoint x="1780" y="525"/>
-        <di:waypoint x="1865" y="525"/>
-        <di:waypoint x="1865" y="263"/>
+      <bpmndi:BPMNEdge id="DI_Flow_ReceiveData" bpmnElement="Flow_ReceiveData">
+        <di:waypoint x="750" y="735"/>
+        <di:waypoint x="670" y="735"/>
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="DI_Flow_16" bpmnElement="Flow_16">
-        <di:waypoint x="1890" y="238.0"/>
-        <di:waypoint x="1940" y="237.5"/>
+      <bpmndi:BPMNEdge id="DI_Flow_Revalidate" bpmnElement="Flow_Revalidate">
+        <di:waypoint x="595" y="770"/>
+        <di:waypoint x="595" y="850"/>
+        <di:waypoint x="685" y="850"/>
+        <di:waypoint x="685" y="575"/>
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="DI_Flow_17" bpmnElement="Flow_17">
-        <di:waypoint x="2090" y="237.5"/>
-        <di:waypoint x="2140" y="238.0"/>
+      <bpmndi:BPMNEdge id="DI_Flow_Assign" bpmnElement="Flow_Assign">
+        <di:waypoint x="1120" y="540"/>
+        <di:waypoint x="1180" y="540"/>
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="DI_Flow_18" bpmnElement="Flow_18">
-        <di:waypoint x="2190" y="237"/>
-        <di:waypoint x="2235" y="237"/>
-        <di:waypoint x="2235" y="375"/>
-        <di:waypoint x="2260" y="375"/>
+      <bpmndi:BPMNEdge id="DI_Flow_Technical" bpmnElement="Flow_Technical">
+        <di:waypoint x="1330" y="540"/>
+        <di:waypoint x="1400" y="540"/>
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="DI_Flow_19" bpmnElement="Flow_19">
-        <di:waypoint x="2165" y="213"/>
-        <di:waypoint x="2165" y="160"/>
+      <bpmndi:BPMNEdge id="DI_Flow_Support" bpmnElement="Flow_Support">
+        <di:waypoint x="1450" y="540"/>
+        <di:waypoint x="1550" y="540"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1508.0" y="516.0" width="40" height="20"/>
+        </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="DI_Flow_20" bpmnElement="Flow_20">
-        <di:waypoint x="2145" y="130"/>
-        <di:waypoint x="1610" y="130"/>
-        <di:waypoint x="1610" y="237"/>
-        <di:waypoint x="1595" y="237"/>
+      <bpmndi:BPMNEdge id="DI_Flow_Develop" bpmnElement="Flow_Develop">
+        <di:waypoint x="1425" y="565"/>
+        <di:waypoint x="1425" y="920"/>
+        <di:waypoint x="1505" y="920"/>
+        <di:waypoint x="1505" y="1000"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1433.0" y="718.5" width="40" height="20"/>
+        </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="DI_Flow_21" bpmnElement="Flow_21">
-        <di:waypoint x="2415" y="375"/>
-        <di:waypoint x="2470" y="375"/>
+      <bpmndi:BPMNEdge id="DI_Flow_QA" bpmnElement="Flow_QA">
+        <di:waypoint x="1580" y="1035"/>
+        <di:waypoint x="1670" y="1035"/>
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="DI_Flow_SLA" bpmnElement="Flow_SLA">
-        <di:waypoint x="1561" y="578"/>
-        <di:waypoint x="1561" y="665"/>
-        <di:waypoint x="1650" y="665"/>
+      <bpmndi:BPMNEdge id="DI_Flow_CheckQA" bpmnElement="Flow_CheckQA">
+        <di:waypoint x="1820" y="1035"/>
+        <di:waypoint x="1880" y="1035"/>
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="DI_Flow_SLA_End" bpmnElement="Flow_SLA_End">
-        <di:waypoint x="1805" y="667"/>
-        <di:waypoint x="1850" y="667"/>
+      <bpmndi:BPMNEdge id="DI_Flow_QAYes" bpmnElement="Flow_QAYes">
+        <di:waypoint x="1930" y="1035"/>
+        <di:waypoint x="2065" y="1035"/>
+        <di:waypoint x="2065" y="565"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="2005.5" y="1011.0" width="40" height="20"/>
+        </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="DI_MessageFlow_Cliente" bpmnElement="MessageFlow_Cliente">
-        <di:waypoint x="258" y="120"/>
-        <di:waypoint x="258" y="355"/>
+      <bpmndi:BPMNEdge id="DI_Flow_QANo" bpmnElement="Flow_QANo">
+        <di:waypoint x="1905" y="1060"/>
+        <di:waypoint x="1905" y="1090"/>
+        <di:waypoint x="1505" y="1090"/>
+        <di:waypoint x="1505" y="1070"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1913.0" y="1051.0" width="40" height="20"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="DI_Flow_SupportMerge" bpmnElement="Flow_SupportMerge">
+        <di:waypoint x="1700" y="540"/>
+        <di:waypoint x="2040" y="540"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="DI_Flow_Notify" bpmnElement="Flow_Notify">
+        <di:waypoint x="2090" y="540"/>
+        <di:waypoint x="2200" y="540"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="DI_Flow_Decision" bpmnElement="Flow_Decision">
+        <di:waypoint x="2350" y="540"/>
+        <di:waypoint x="2460" y="540"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="DI_Flow_Accepted" bpmnElement="Flow_Accepted">
+        <di:waypoint x="2610" y="540"/>
+        <di:waypoint x="2730" y="540"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="DI_Flow_AcceptYes" bpmnElement="Flow_AcceptYes">
+        <di:waypoint x="2780" y="540"/>
+        <di:waypoint x="3070" y="540"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="2933.0" y="516.0" width="40" height="20"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="DI_Flow_AcceptNo" bpmnElement="Flow_AcceptNo">
+        <di:waypoint x="2755" y="565"/>
+        <di:waypoint x="2755" y="835"/>
+        <di:waypoint x="2620" y="835"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="2763.0" y="676.0" width="40" height="20"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="DI_Flow_Reopen" bpmnElement="Flow_Reopen">
+        <di:waypoint x="2470" y="835"/>
+        <di:waypoint x="2150" y="835"/>
+        <di:waypoint x="2150" y="880"/>
+        <di:waypoint x="1360" y="880"/>
+        <di:waypoint x="1360" y="470"/>
+        <di:waypoint x="1425" y="470"/>
+        <di:waypoint x="1425" y="515"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="DI_Flow_FirstAlert" bpmnElement="Flow_FirstAlert">
+        <di:waypoint x="498" y="593"/>
+        <di:waypoint x="450" y="593"/>
+        <di:waypoint x="450" y="1210"/>
+        <di:waypoint x="1060" y="1210"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="DI_Flow_FirstReview" bpmnElement="Flow_FirstReview">
+        <di:waypoint x="1155" y="1250"/>
+        <di:waypoint x="1155" y="1360"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="DI_Flow_FirstDone" bpmnElement="Flow_FirstDone">
+        <di:waypoint x="1250" y="1400"/>
+        <di:waypoint x="1390" y="1400"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="DI_MessageFlow_Solicitud" bpmnElement="MessageFlow_Solicitud">
+        <di:waypoint x="238" y="130"/>
+        <di:waypoint x="238" y="235"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="250" y="145" width="150" height="40"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="DI_MessageFlow_Acuse" bpmnElement="MessageFlow_Acuse">
+        <di:waypoint x="400" y="505"/>
+        <di:waypoint x="400" y="130"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="412" y="145" width="150" height="40"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="DI_MessageFlow_PedidoDatos" bpmnElement="MessageFlow_PedidoDatos">
+        <di:waypoint x="790" y="700"/>
+        <di:waypoint x="790" y="130"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="802" y="145" width="150" height="40"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="DI_MessageFlow_Datos" bpmnElement="MessageFlow_Datos">
+        <di:waypoint x="560" y="130"/>
+        <di:waypoint x="560" y="700"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="572" y="145" width="150" height="40"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="DI_MessageFlow_Solucion" bpmnElement="MessageFlow_Solucion">
+        <di:waypoint x="2275" y="505"/>
+        <di:waypoint x="2275" y="130"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="2287" y="145" width="150" height="40"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="DI_MessageFlow_Decision" bpmnElement="MessageFlow_Decision">
+        <di:waypoint x="2535" y="130"/>
+        <di:waypoint x="2535" y="505"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="2547" y="145" width="150" height="40"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="DI_MessageFlow_Cierre" bpmnElement="MessageFlow_Cierre">
+        <di:waypoint x="3905" y="218"/>
+        <di:waypoint x="3905" y="130"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="3917" y="145" width="150" height="40"/>
+        </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>
